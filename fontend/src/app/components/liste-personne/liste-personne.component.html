@@ -1,0 +1,203 @@
+<!-- Affichage d'un message toast à l'utilisateur -->
+<p-toast></p-toast>
+
+<!-- Début d'une carte contenant un tableau -->
+<div class="card">
+
+  <!-- Barre d'outils -->
+  <p-toolbar>
+
+    <!-- Groupe de boutons à gauche -->
+    <div class="p-toolbar-group-left">
+      <p-button
+        (click)="showDialog()"
+        label="Ajouter"
+        icon="pi pi-plus"
+        class="mr-2"
+      ></p-button>
+    </div>
+
+    <!-- Groupe de boutons à droite -->
+    <div class="p-toolbar-group-right">
+      <span class="p-input-icon-left mb-2 md:mb-0">
+        <i class="pi pi-search"></i>
+        <input
+          type="search"
+          pInputText
+          placeholder="Recherche par nom"
+          (input)="p.filterGlobal($any($event.target).value, 'contains')"
+        />
+      </span>
+    </div>
+  </p-toolbar>
+
+  <!-- Tableau -->
+  <p-table
+    #p
+    [value]="listePersonne"
+    styleClass="p-datatable-striped"
+    [paginator]="true"
+    [rows]="10"
+    [showCurrentPageReport]="true"
+    [(first)]="first"
+    [rowsPerPageOptions]="[10, 20, 30]"
+    [globalFilterFields]="['nom', 'age']"
+    class="center"
+  >
+
+    <!-- En-tête du tableau -->
+    <ng-template pTemplate="header">
+      <tr>
+        <th>N°</th>
+        <th pSortableColumn="nom">
+          Nom
+          <p-sortIcon></p-sortIcon>
+        </th>
+        <th>Prenoms</th>
+        <th>
+          Age
+          <p-columnFilter field="age" matchMode="equals" display="menu">
+
+            <!-- Filtre pour l'âge -->
+            <ng-template
+              pTemplate="filter"
+              let-value
+              let-filter="filterCallback"
+            >
+              <p-dropdown
+                [ngModel]="value"
+                [options]="agesOptions"
+                (onChange)="filter($event.value)"
+                placeholder="Any"
+              >
+                <ng-template let-option pTemplate="item">
+                  <span [class]="'customer-badge status-' + option.value">{{
+                    option.label
+                  }}</span>
+                </ng-template>
+              </p-dropdown>
+            </ng-template>
+          </p-columnFilter>
+        </th>
+
+        <th>Departement</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+
+    <!-- Corps du tableau -->
+    <ng-template pTemplate="body" let-personne let-index="rowIndex">
+      <tr>
+        <td>{{ index + 1 }}</td>
+        <td>{{ personne.nom }}</td>
+        <td>{{ personne.prenoms }}</td>
+        <td>{{ personne.age }}</td>
+        <td>{{ personne.departement.designation }}</td>
+        <td>
+           <!-- Bouton pour modifier une personne -->
+          <button
+          pButton
+          pRipple
+          icon="pi pi-user-edit"
+          class="p-button-rounded p-button-primary mr-2"
+            (click)="editPersonne(personne)"
+          ></button>
+            <!-- Bouton pour supprimer une personne -->
+          <button
+          pButton
+          pRipple
+          icon="pi pi-trash"
+          class="p-button-rounded p-button-danger"
+            (click)="deletePersonne(personne.id)"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Création d'un dialogue de formulaire avec PrimeNG -->
+<p-dialog
+  header="Information Personne" 
+  [(visible)]="visible" 
+  [style]="{ width: '60vw' }"
+  styleClass="p-fluid"
+  [draggable]="false" 
+>
+  <!-- Contenu du dialogue -->
+  <ng-template pTemplate="content">
+    <br />
+    <!-- Champ pour le nom -->
+    <div class="p-float-label">
+      <input
+        pInputText
+        id="nom"
+        [(ngModel)]="personne.nom"
+        required
+        autofocus
+        #nomInput="ngModel"
+        [ngClass]="{
+          'ng-dirty': nomInput.invalid && submitted
+        }"
+      />
+      <label htmlFor="nom">Nom</label>
+    </div>
+    <br />
+    <!-- Champ pour le prénom -->
+    <div class="p-float-label">
+      <input
+        type="texte"
+        pInputText
+        id="prenoms"
+        [(ngModel)]="personne.prenoms"
+        required="true"
+        autofocus
+        #prenomsInput="ngModel"
+        [ngClass]="{
+          'ng-dirty': prenomsInput.invalid && submitted
+        }"
+      />
+      <label htmlFor="prenoms">Prenom</label>
+    </div>
+    <br />
+    <!-- Champ pour l'âge -->
+    <div class="p-float-label">
+      <input
+        pInputText
+        id="age"
+        [(ngModel)]="personne.age"
+        required
+        autofocus
+        #ageInput="ngModel"
+        type="number"
+        min="1"
+        [ngClass]="{
+          'ng-dirty': ageInput.invalid && submitted
+        }"
+      />
+      <label htmlFor="age">Age</label>
+    </div>
+    <br />
+    <!-- Champ pour le département avec un autocomplete -->
+    <div class="p-float-label">
+      <p-autoComplete
+        [(ngModel)]="departement"
+        [dropdown]="true"
+        field="departement"
+        id="departement"
+      ></p-autoComplete>
+      <label htmlFor="departement">Departement</label>
+    </div>
+  </ng-template>
+  <!-- Pied de page du dialogue avec un bouton pour enregistrer les informations -->
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      pRipple
+      [label]="btnText"
+      icon="pi pi-check"
+      class="p-button-text"
+      (click)="savePersonne(personne.id, personne)"
+    ></button>
+  </ng-template>
+</p-dialog>
